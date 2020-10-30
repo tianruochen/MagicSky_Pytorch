@@ -36,9 +36,9 @@ class Trainer(BaseTrainer):
 		self.config = config
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
-		self.do_validation = self.valid_data_loader is not None
+		self.do_validation = self.valid_loader is not None
 		self.lr_scheduler = lr_scheduler
-		self.max_iter = len(self.data_loader) * self.epochs
+		self.max_iter = len(self.train_loader) * self.epochs
 		self.init_lr = optimizer.param_groups[0]['lr']
 
 
@@ -72,13 +72,14 @@ class Trainer(BaseTrainer):
 		# Perform training
 		total_loss = 0
 		total_metrics = np.zeros(len(self.metrics))
-		n_iter = len(self.data_loader)
-		for batch_idx, (data, target) in tqdm(enumerate(self.data_loader), total=n_iter):
+		n_iter = len(self.train_loader)
+		for batch_idx, (data, target) in tqdm(enumerate(self.train_loader), total=n_iter):
 			curr_iter = batch_idx + (epoch-1)*n_iter
 			data, target = data.to(self.device), target.to(self.device)
 			self.optimizer.zero_grad()
 			output = self.model(data)
 			loss = self.loss(output, target)
+			print(f"loss: {loss.item()}")
 			loss.backward()
 			self.optimizer.step()
 
@@ -86,19 +87,19 @@ class Trainer(BaseTrainer):
 			total_metrics += self._eval_metrics(output, target)
 
 			if (batch_idx==n_iter-2) and (self.verbosity>=2):
-				self.writer_train.add_image('train/input', make_grid(data[:,:3,:,:].cpu(), nrow=4, normalize=True))
-				self.writer_train.add_image('train/label', make_grid(target.unsqueeze(1).cpu(), nrow=4, normalize=True))
+				self.writer_train.add_image('train/input', make_grid(data[:,:3,:,:].cpu(), nrow=4, normalize=False))
+				self.writer_train.add_image('train/label', make_grid(target.cpu(), nrow=4, normalize=False))
 				if type(output)==tuple or type(output)==list:
-					self.writer_train.add_image('train/output', make_grid(F.softmax(output[0], dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
+					self.writer_train.add_image('train/output', make_grid(output[0].cpu(), nrow=4, normalize=True))
 				else:
 					# self.writer_train.add_image('train/output', make_grid(output.cpu(), nrow=4, normalize=True))
-					self.writer_train.add_image('train/output', make_grid(F.softmax(output, dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
+					self.writer_train.add_image('train/output', make_grid(output.cpu(), nrow=4, normalize=True))
 
 			poly_lr_scheduler(self.optimizer, self.init_lr, curr_iter, self.max_iter, power=0.9)
 
 		# Record log
-		total_loss /= len(self.data_loader)
-		total_metrics /= len(self.data_loader)
+		total_loss /= len(self.train_loader)
+		total_metrics /= len(self.train_loader)
 		log = {
 			'train_loss': total_loss,
 			'train_metrics': total_metrics.tolist(),
@@ -138,12 +139,12 @@ class Trainer(BaseTrainer):
 		self.model.eval()
 		total_val_loss = 0
 		total_val_metrics = np.zeros(len(self.metrics))
-		n_iter = len(self.valid_data_loader)
+		n_iter = len(self.valid_loader)
 		self.writer_valid.set_step(epoch)
 
 		with torch.no_grad():
 			# Validate
-			for batch_idx, (data, target) in tqdm(enumerate(self.valid_data_loader), total=n_iter):
+			for batch_idx, (data, target) in tqdm(enumerate(self.valid_loader), total=n_iter):
 				data, target = data.to(self.device), target.to(self.device)
 				output = self.model(data)
 				loss = self.loss(output, target)
@@ -153,16 +154,16 @@ class Trainer(BaseTrainer):
 
 				if (batch_idx==n_iter-2) and(self.verbosity>=2):
 					self.writer_valid.add_image('valid/input', make_grid(data[:,:3,:,:].cpu(), nrow=4, normalize=True))
-					self.writer_valid.add_image('valid/label', make_grid(target.unsqueeze(1).cpu(), nrow=4, normalize=True))
+					self.writer_valid.add_image('valid/label', make_grid(target.cpu(), nrow=4, normalize=True))
 					if type(output)==tuple or type(output)==list:
-						self.writer_valid.add_image('valid/output', make_grid(F.softmax(output[0], dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
+						self.writer_valid.add_image('valid/output', make_grid(output.cpu(), nrow=4, normalize=True))
 					else:
 						# self.writer_valid.add_image('valid/output', make_grid(output.cpu(), nrow=4, normalize=True))
-						self.writer_valid.add_image('valid/output', make_grid(F.softmax(output, dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
+						self.writer_valid.add_image('valid/output', make_grid(output.cpu(), nrow=4, normalize=True))
 
 			# Record log
-			total_val_loss /= len(self.valid_data_loader)
-			total_val_metrics /= len(self.valid_data_loader)
+			total_val_loss /= len(self.valid_loader)
+			total_val_metrics /= len(self.valid_loader)
 			val_log = {
 				'valid_loss': total_val_loss,
 				'valid_metrics': total_val_metrics.tolist(),

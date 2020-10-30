@@ -58,9 +58,9 @@ class BaseModel(nn.Module):
 				if state_dict[k].shape==v.shape:
 					model_dict[k] = v
 				else:
-					print("[%s]"%(self.__class__.__name__), k, "is ignored due to not matching shape")
+					print("[%s]" % self.__class__.__name__, k, "is ignored due to not matching shape")
 			else:
-				print("[%s]"%(self.__class__.__name__), k, "is ignored due to not matching key")
+				print("[%s]" % self.__class__.__name__, k, "is ignored due to not matching key")
 		state_dict.update(model_dict)
 		self.load_state_dict(state_dict)
 

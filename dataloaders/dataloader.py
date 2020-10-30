@@ -41,7 +41,7 @@ class PairedDataAugmentation:
         img2 = TF.resize(img2, [self.img_resize, self.img_resize], interpolation=3)
 
         if self.with_random_flip and random.random() > 0.5:
-            if random.randint(2):
+            if random.randint(0, 2):
                 img1 = TF.hflip(img1)
                 img2 = TF.hflip(img2)
             else:
@@ -54,12 +54,12 @@ class PairedDataAugmentation:
             img2 = TF.rotate(img2, angle)
 
         if self.with_random_crop and random.random() > 0.5:
-            i, j, h, w = transforms.RandomResizedCrop(size=self.img_size). \
+            i, j, h, w = transforms.RandomResizedCrop(size=self.img_resize). \
                 get_params(img=img1, scale=(0.5, 1.0), ratio=(0.9, 1.1))
             img1 = TF.resized_crop(
-                img1, i, j, h, w, size=(self.img_size, self.img_size))
+                img1, i, j, h, w, size=(self.img_resize, self.img_resize))
             img2 = TF.resized_crop(
-                img2, i, j, h, w, size=(self.img_size, self.img_size))
+                img2, i, j, h, w, size=(self.img_resize, self.img_resize))
 
         if self.with_random_brightness and random.random() > 0.5:
             # multiply a random number within a - b
@@ -87,15 +87,16 @@ class PairedDataAugmentation:
 class MagicSkyDataSet(Dataset):
 
     def __init__(self, root_dir, img_resize=224, random_flip=True, random_crop=True,
-                 random_rotate=True,random_brightness=True, random_gamma=True,
-                 random_saturation=True,is_train=True):
+                 random_rotate=True, random_brightness=True, random_gamma=True,
+                 random_saturation=True, is_train=True):
 
         self.root_dir = root_dir
         self.img_resize = img_resize
         self.is_train = is_train
         if self.is_train:
-            self.img_paths = glob.golb(os.path.join(self.root_dir, "images/trian", "*.jpg"))
-            self.self.augm = PairedDataAugmentation(
+            self.img_paths = glob.glob(os.path.join(os.path.abspath(self.root_dir), "images/train/", "*.jpg"))
+            print(len(self.img_paths))
+            self.augm = PairedDataAugmentation(
                 img_resize=self.img_resize,
                 with_random_flip=random_flip,
                 with_random_crop=random_crop,
@@ -107,7 +108,7 @@ class MagicSkyDataSet(Dataset):
         else:
             self.img_paths = glob.glob(os.path.join(self.root_dir, "images/val", "*.jpg"))
             self.augm = PairedDataAugmentation(
-                img_resize=self.img_size
+                img_resize=self.img_resize
             )
 
     def __len__(self):
@@ -137,8 +138,8 @@ class MagicSkyDataLoader(object):
 
     def __init__(self, root_dir, img_resize=224, random_flip=False, random_crop=False,
                  random_rotate=False,random_brightness=False, random_gamma=False,
-                 random_saturation=False,is_train=True,
-                 shuffle=True, batch_size=1, n_worker=1, pin_memory=True):
+                 random_saturation=False, is_train=True,
+                 shuffle=True, batch_size=1, n_workers=1, pin_memory=True):
         super(MagicSkyDataLoader, self).__init__()
 
         # parameters of dataset
@@ -155,7 +156,7 @@ class MagicSkyDataLoader(object):
         # parameters of dataloader
         self.shuffle = shuffle
         self.batch_size = batch_size
-        self.n_worker = n_worker
+        self.n_workers = n_workers
         self.pin_memory = pin_memory
 
 

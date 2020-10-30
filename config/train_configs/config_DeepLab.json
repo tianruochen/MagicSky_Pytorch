@@ -1,5 +1,5 @@
 {
-	"name": "HumanSeg",
+	"name": "MagicSky",
 	"n_gpu": 1,
 	
 	"arch": {
@@ -7,27 +7,24 @@
 		"args": {
 			"backbone": "resnet18",
 			"output_stride": 16,
-			"num_classes": 2,
+			"num_classes": 1,
 			"freeze_bn": false,
 			"pretrained_backbone": "/workspace/pretrain/resnet18.pth"
 		}
 	},
 
 	"train_loader": {
-		"type": "SegmentationDataLoader",
+		"type": "MagicSkyDataLoader",
 		"args":{
-			"pairs_file": "dataset/train_mask.txt",
-			"color_channel": "RGB",
-			"resize": 320,
-			"padding_value": 0,
-			"is_training": true,
-			"noise_std": 3,
-			"crop_range": [0.90, 1.0],
-			"flip_hor": 0.5,
-			"rotate": 0.0,
-			"angle": 10,
-			"normalize": true,
-			"one_hot": false,
+			"root_dir": "./datasets/cvprw2020_sky_seg/",
+			"img_resize": 384,
+			"random_flip": true,
+			"random_crop": true,
+			"random_rotate": true,
+			"random_brightness": true,
+			"random_gamma": true,
+			"random_saturation": true,
+			"is_train": true,
 			"shuffle": true,
 			"batch_size": 16,
 			"n_workers": 24,
@@ -36,15 +33,11 @@
 	},
 
 	"valid_loader": {
-		"type": "SegmentationDataLoader",
+		"type": "MagicSkyDataLoader",
 		"args":{
-			"pairs_file": "dataset/valid_mask.txt",
-			"color_channel": "RGB",
-			"resize": 320,
-			"padding_value": 0,
-			"is_training": false,
-			"normalize": true,
-			"one_hot": false,
+			"root_dir": "./datasets/cvprw2020_sky_seg",
+			"img_resize": 384,
+			"is_train": false,
 			"shuffle": false,
 			"batch_size": 16,
 			"n_workers": 24,
@@ -69,14 +62,14 @@
 	"lr_scheduler": {
 		"type":"StepLR",
 		"args":{
-			"step_size": 100,
-			"gamma": 1.0
+			"step_size": 50,
+			"gamma": 0.1
 		}
 	},
 
 	"trainer": {
-		"epochs": 80,
-		"save_dir": "/workspace/checkpoints/",
+		"epochs": 120,
+		"save_dir": "./checkpoints/",
 		"save_freq": 1,
 		"verbosity": 2,
 		"monitor": "valid_loss",
@@ -85,6 +78,6 @@
 
 	"visualization":{
 		"tensorboardX": true,
-		"log_dir": "/workspace/checkpoints/"
+		"log_dir": "./models_log/"
 	}
 }
