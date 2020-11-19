@@ -16,6 +16,7 @@ parser.add_argument('-p', '--path', type=str, default="./config/bgsky_configs/an
 
 
 if __name__ == "__main__":
+
     sky_config_path = parser.parse_args().path
     # sky_config_path = "./config/bgsky_configs/canyon-jupiter.json"
     sky_config = infer_utils.parse_sky_config(sky_config_path)

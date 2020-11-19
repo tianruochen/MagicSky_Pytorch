@@ -104,7 +104,7 @@ class UNet(BaseModel):
 		self._init_weights()
 		if pretrained_backbone is not None:
 			self.backbone._load_pretrained_model(pretrained_backbone)
-
+		self.sigmoid = nn.Sigmoid()
 
 	def forward(self, input):
 		# x1 - (bs, 16, 112, 112)
@@ -116,6 +116,8 @@ class UNet(BaseModel):
 		# decoder 先反卷积使得与分辨率、输出通道与上一阶段输出一致
 		# 然后concat到一起，使得通道数翻倍
 		# 通过逆残差结构产生x，最终的x的分辨率与通道数与上一阶段(x4)一致
+		# print(x5.shape, x4.shape)
+		# print(x3.shape, x2.shape, x1.shape)
 		x = self.decoder1(x5, x4)    # (bs, 96, 14, 14)
 		x = self.decoder2(x, x3)     # (bs, 32, 28, 28)
 		x = self.decoder3(x, x2)     # (bs, 24, 56, 56)
@@ -123,7 +125,7 @@ class UNet(BaseModel):
 		x = self.conv_last(x)        # (bs,num_cla,112,112)
 		x = F.interpolate(x, size=input.shape[-2:], mode='bilinear', align_corners=True)
 		# (bs,num_cla,224,224)
-		return x
+		return self.sigmoid(x)
 
 
 	def _run_backbone_mobilenetv2(self, input):

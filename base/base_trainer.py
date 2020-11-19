@@ -4,7 +4,7 @@
 from time import time
 import os, math, json, logging, datetime, torch
 from utils.visualization import WriterTensorboardX
-
+from utils.summary_utils import summary_model
 
 # ------------------------------------------------------------------------------
 #   Class of BaseTrainer
@@ -14,7 +14,7 @@ class BaseTrainer:
     Base class for all trainers
     """
 
-    def __init__(self, model, loss, metrics, optimizer, resume, config, train_logger=None):
+    def __init__(self, model, loss, metrics, optimizer, resume, config, train_logger=None, device=None):
         self.config = config
 
         # Setup directory for checkpoint saving
@@ -36,8 +36,15 @@ class BaseTrainer:
             ])
         self.logger = logging.getLogger(self.__class__.__name__)
 
+        # summary model
+        summary_model(model, input_size=(3, 384, 384), batch_size=1, device="cpu")
+
         # Setup GPU device if available, move model into configured device
-        self.device, device_ids = self._prepare_device(config['n_gpu'])
+        if device is not None:
+            self.device = device
+            device_ids = []
+        else:
+            self.device, device_ids = self._prepare_device(config['n_gpu'])
         self.model = model.to(self.device)
         if len(device_ids) > 1:
             self.model = torch.nn.DataParallel(model, device_ids=device_ids)
@@ -88,7 +95,7 @@ class BaseTrainer:
                 n_gpu_use, n_gpu)
             self.logger.warning(msg)
             n_gpu_use = n_gpu
-        device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
+        device = torch.device('cuda' if n_gpu_use > 0 else 'cpu')
         list_ids = list(range(n_gpu_use))
         return device, list_ids
 
@@ -104,6 +111,7 @@ class BaseTrainer:
 
             # save logged informations into log dict
             log = {}
+            print(result)
             for key, value in result.items():
                 if key == 'train_metrics':
                     log.update({'train_' + mtr.__name__: value[i] for i, mtr in enumerate(self.metrics)})

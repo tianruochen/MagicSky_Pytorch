@@ -3,9 +3,9 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "ResNetFPN",
+        "type": "ResNet50FCN",
         "args": {
-            "backbone": "resnet18",
+			"coordconv": true,
             "num_classes": 1,
             "pretrained_backbone": null
         }

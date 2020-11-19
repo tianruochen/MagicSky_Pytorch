@@ -1,29 +1,29 @@
 {
   "arch": {
-        "type": "ResNetFPN",
+        "type": "ResNet50FCN",
         "args": {
-            "backbone": "resnet50",
+			"coordconv": true,
             "num_classes": 1,
             "pretrained_backbone": null
         }
   },
-  "ckptdir": "./checkpoints_G_coord_resnet50",
-
+  "ckptdir": "/home/changqing/workspaces/MagicSky_Pytorch/checkpoints/ResNet50FCN/best_ckpt.pt",
   "input_mode": "video",
   "datadir": "./test_videos/canyon.mp4",
   "sky_box": "jupiter.jpg",
 
+  "fix_size": false,
   "in_size_w": 384,
   "in_size_h": 384,
   "out_size_w": 845,
   "out_size_h": 480,
 
   "skybox_center_crop": 0.5,
-  "auto_light_matching": false,
+  "auto_light_matching": true,
   "relighting_factor": 0.8,
   "recoloring_factor": 0.5,
   "halo_effect": true,
 
   "output_dir": "./eval_output",
-  "save_jpgs": false
+  "save_jpgs": true
 }

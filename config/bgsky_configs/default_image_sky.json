@@ -7,11 +7,10 @@
             "pretrained_backbone": null
         }
   },
-  "ckptdir": "./checkpoints_G_coord_resnet50",
-
-  "input_mode": "video",
-  "datadir": "./test_videos/canyon.mp4",
-  "sky_box": "jupiter.jpg",
+  "ckptdir": "./checkpoints/ResNetFPN/1030_101844/model_best.pth",
+  "input_mode": "image",
+  "datadir": "./test_images/img3.jpg",
+  "sky_box": "galaxy.jpg",
 
   "in_size_w": 384,
   "in_size_h": 384,
@@ -25,5 +24,5 @@
   "halo_effect": true,
 
   "output_dir": "./eval_output",
-  "save_jpgs": false
+  "save_jpgs": true
 }

@@ -5,7 +5,7 @@
     "arch": {
         "type": "UNet",
         "args": {
-            "backbone": "mobilenetv2",
+            "backbone": "resnet50",
             "num_classes": 1,
             "pretrained_backbone": null
         }
@@ -46,13 +46,13 @@
 	"optimizer": {
 		"type": "SGD",
 		"args":{
-			"lr": 1e-3,
+			"lr": 1e-2,
 			"momentum": 0.9,
 			"weight_decay": 1e-8
 		}
 	},
 
-	"loss": "dice_loss",
+	"loss": "mse_loss",
 	"metrics": [
 		"miou"
 	],
@@ -66,7 +66,7 @@
 	},
 
 	"trainer": {
-		"epochs": 80,
+		"epochs": 120,
 		"save_dir": "./checkpoints/",
 		"save_freq": null,
 		"verbosity": 2,

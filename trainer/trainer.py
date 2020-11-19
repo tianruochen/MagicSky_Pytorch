@@ -31,7 +31,7 @@ class Trainer(BaseTrainer):
 		Inherited from BaseTrainer.
 	"""
 	def __init__(self, model, loss, metrics, optimizer, resume, config,
-				 train_loader, valid_loader=None, lr_scheduler=None, train_logger=None):
+				 train_loader, device=None, valid_loader=None, lr_scheduler=None, train_logger=None):
 		super(Trainer, self).__init__(model, loss, metrics, optimizer, resume, config, train_logger)
 		self.config = config
 		self.train_loader = train_loader
@@ -77,7 +77,8 @@ class Trainer(BaseTrainer):
 			curr_iter = batch_idx + (epoch-1)*n_iter
 			data, target = data.to(self.device), target.to(self.device)
 			self.optimizer.zero_grad()
-			output = self.model(data)
+			output = self.model(data)   # (bs,1,384,384)
+
 			loss = self.loss(output, target)
 			print(f"loss: {loss.item()}")
 			loss.backward()
@@ -85,6 +86,13 @@ class Trainer(BaseTrainer):
 
 			total_loss += loss.item()
 			total_metrics += self._eval_metrics(output, target)
+
+			# 扩展output 与target的维度 用于tensorboard输出
+			# (bs,h,w) -- > (bs, 3, h, w)
+			# print("output shape: ", output.shape)
+			# print("target shape: ", target.shape)
+			output = output.repeat([1, 3, 1, 1])
+			target = target.unsqueeze(1).repeat([1, 3, 1, 1])
 
 			if (batch_idx==n_iter-2) and (self.verbosity>=2):
 				self.writer_train.add_image('train/input', make_grid(data[:,:3,:,:].cpu(), nrow=4, normalize=False))
@@ -151,6 +159,9 @@ class Trainer(BaseTrainer):
 
 				total_val_loss += loss.item()
 				total_val_metrics += self._eval_metrics(output, target)
+
+				output = output.repeat([1, 3, 1, 1])
+				target = target.unsqueeze(1).repeat([1, 3, 1, 1])
 
 				if (batch_idx==n_iter-2) and(self.verbosity>=2):
 					self.writer_valid.add_image('valid/input', make_grid(data[:,:3,:,:].cpu(), nrow=4, normalize=True))

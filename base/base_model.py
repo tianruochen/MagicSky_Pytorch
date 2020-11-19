@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 
 import torchsummary
-import os, warnings, sys
+from utils import summary_model
 from utils import add_flops_counting_methods, flops_to_string
 
 
@@ -18,7 +18,8 @@ class BaseModel(nn.Module):
 
 	def summary(self, input_shape, batch_size=1, device='cpu', print_flops=False):
 		print("[%s] Network summary..." % (self.__class__.__name__))
-		torchsummary.summary(self, input_size=input_shape, batch_size=batch_size, device=device)
+		# torchsummary.summary(self, input_size=input_shape, batch_size=batch_size, device=device)
+		summary_model(self, input_size=input_shape, batch_size=batch_size, device=device)
 		if print_flops:
 			input = torch.randn([1, *input_shape], dtype=torch.float)
 			counter = add_flops_counting_methods(self)
@@ -50,6 +51,10 @@ class BaseModel(nn.Module):
 		elif isinstance(pretrained, dict):
 			print("[%s] Load pretrained model" % (self.__class__.__name__))
 			pretrain_dict = pretrained
+
+		# for ResNet50FCN
+		if "model_G_state_dict" in pretrain_dict.keys():
+			pretrain_dict = pretrain_dict["model_G_state_dict"]
 
 		model_dict = {}
 		state_dict = self.state_dict()

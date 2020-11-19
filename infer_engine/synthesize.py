@@ -24,14 +24,19 @@ class SynthesizeEngine():
         self.frame_id = 0
         self.M = np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32)
 
-        self.load_bgsky()
+        # self.load_bgsky()
 
-    def load_bgsky(self):
+    def load_bgsky(self, w, h):
+
+        self.sky_config["out_size_w"] = int(w)
+        self.sky_config["out_size_h"] = int(h)
+
         print('initialize new sky...')
 
         if '.jpg' in self.sky_config["sky_box"]:
             # static backgroud
-            skybox_img = cv2.imread(os.path.join(r'./skyimages', self.sky_config["sky_box"]), cv2.IMREAD_COLOR)
+            # skybox_img = cv2.imread(os.path.join(r'./skyimages', self.sky_config["sky_box"]), cv2.IMREAD_COLOR)
+            skybox_img = cv2.imread("/home/changqing/workspaces/MagicSky_Pytorch/skyimages/jupiter.jpg", cv2.IMREAD_COLOR)
             skybox_img = cv2.cvtColor(skybox_img, cv2.COLOR_BGR2RGB)
 
             self.skybox_img = cv2.resize(
@@ -66,6 +71,7 @@ class SynthesizeEngine():
         r, eps = 20, 0.01
         # 导向滤波：导向滤波比起双边滤波来说在边界附近效果较好
         refined_skymask = guidedFilter(img[:,:,2], G_pred[:,:,0], r, eps)
+        refined_skymask = guidedFilter(img[:, :, 2], refined_skymask, r, eps)
         # print(refined_skymask.shape)    # 480，845
 
         refined_skymask = np.stack(
@@ -102,17 +108,19 @@ class SynthesizeEngine():
         curr_gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         curr_gray = np.array(255*curr_gray, dtype=np.uint8)    # 480，845
         # mask 480，845
-        mask = np.array(skymask[:,:,0] > 0.99, dtype=np.uint8)
+        mask = np.array(skymask[:,:,0] > 0.6, dtype=np.uint8)
 
-        template_size = int(0.05*mask.shape[0])    # 24
+        template_size = int(0.05*mask.shape[0]) + 10    # 24
         mask = cv2.erode(mask, np.ones([template_size, template_size]))
+        mask = cv2.erode(mask, np.ones([20, 20]))
+
         # mask = cv2.dilate(mask, np.ones([template_size, template_size]))
 
         # ShiTomasi corner detection  跟踪检测图像的角点  返回检测到的角点  （105，1，2）
         # 用于获得光流估计所需要的角点  old_gray表示输入图像，mask表示掩膜
         prev_pts = cv2.goodFeaturesToTrack(
             prev_gray, mask=mask, maxCorners=200,
-            qualityLevel=0.01, minDistance=30, blockSize=3)
+            qualityLevel=0.01, minDistance=20, blockSize=4)
 
         # prev_pts = cv2.goodFeaturesToTrack(
         #     prev_gray, maxCorners=200,
@@ -137,7 +145,7 @@ class SynthesizeEngine():
         print(curr_pts.shape[0])
         prev_pts, curr_pts = removeOutliers(prev_pts, curr_pts)
         print(curr_pts.shape[0])
-        if curr_pts.shape[0] < 10:   #10
+        if curr_pts.shape[0] < 7:   #10
             print('no good point matched...')
             return np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32)
 
@@ -196,9 +204,17 @@ class SynthesizeEngine():
 
 
     def skyblend(self, img, img_prev, skymask):
+        print(img.shape)
+        print(skymask.shape)
+        if img_prev is not None:
+            print(img_prev.shape)
 
+        # 如果是处理单张图像的话 img_prev == None
+        if img_prev is None:
+            m = self.M
         # （2，3）的变换矩阵
-        m = self.skybox_tracking(img, img_prev, skymask)
+        else:
+            m = self.skybox_tracking(img, img_prev, skymask)
 
         # 根据变换矩阵获得最终可用的背景 （480，845）
         skybg = self.get_skybg_from_box(m)
@@ -206,6 +222,8 @@ class SynthesizeEngine():
         # 对图像重新打光  使得图像前景光与天空背景光差异不过于太大
         img = self.relighting(img, skybg, skymask)
         # 根据skymask合成新的图片
+        # skymask[skymask >= 0.45] = 0.95
+        skymask[skymask < 0.3] = 0.1
         syneth = img * (1 - skymask) + skybg * skymask
 
         if self.sky_config["halo_effect"]:
@@ -242,8 +260,9 @@ class SynthesizeEngine():
 
         with torch.no_grad():
             print(img.shape)
-            G_pred = mode(img.to(device))  # bs,1,384,384
+            G_pred = mode(img.to(device))  # bs,1,384,384  (0-1之间)
             # bs,1,384,384 -- bs 1 480,845
+            print(h,w)
             G_pred = torch.nn.functional.interpolate(G_pred, (h, w), mode='bicubic', align_corners=False)
             G_pred = G_pred[0, :].permute([1, 2, 0])  # 480,845,1
             G_pred = torch.cat([G_pred, G_pred, G_pred], dim=-1)  # 480,845，3
@@ -258,6 +277,7 @@ class SynthesizeEngine():
         # 返回合成的新图，模型的输出，天空的掩膜（不是二值图像，而是模型输出经过导向滤波后的输出）
         # shape均为：(480，845 3)
         return syneth, G_pred, skymask
+
 
 
 

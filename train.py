@@ -8,15 +8,22 @@ import os
 import json
 import argparse
 
-import torch
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
+import torch
+import torch.nn as nn
 import models as arch_module
 
 import dataloaders.dataloader as data_module
 import evaluation.losses as loss_module
+
 import evaluation.metrics as metric_module
 
+from utils import Logger
 from trainer.trainer import Trainer
+
+
 
 #------------------------------------------------------------------------------
 #   Get instance
@@ -32,38 +39,40 @@ def get_instance(module, name, config, *args):
 #------------------------------------------------------------------------------
 #   Main function
 #------------------------------------------------------------------------------
-def main(config, resume):
+def main(config, resume, device):
+
+    train_logger = Logger()
     # Setup data_loader instance
     train_loader = get_instance(data_module, "train_loader", config).loader
     valid_loader = get_instance(data_module, "valid_loader", config).loader
 
+
     # Build model architecture
     model = get_instance(arch_module, "arch", config)
     # Summary need model input size
-    img_size = config["train_loader"]["args"]["resize"]
-    model.summary(input_shape=(3, img_size, img_size))
+    # img_resize = config["train_loader"]["args"]["img_resize"]
+    # model.summary(input_shape=(3, img_resize, img_resize))
 
     # Get loss function and metrics
-    loss = get_instance(loss_module, config['loss'])
-    metrics = get_instance(metric_module, config['metrics'])
+    loss = getattr(loss_module, config["loss"])
+    # loss = nn.MSELoss()
+    metrics = [getattr(metric_module, met) for met in config['metrics']]
 
     # Build optimizer and learning rate scheduler
-    trainable_params = filter(lambda p: p.requred_grad(), model.parameters())
+    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = get_instance(torch.optim, "optimizer", config, trainable_params)
-    lr_scheduler = get_instance(torch.optim.lr_scheduler, "lr_schedule", config, optimizer)
+    lr_scheduler = get_instance(torch.optim.lr_scheduler, "lr_scheduler", config, optimizer)
 
     # Create trianer and start training
     trainer = Trainer(model, loss, metrics, optimizer,
                       resume=resume,
                       config=config,
+                      device=device,
                       train_loader=train_loader,
                       valid_loader=valid_loader,
-                      lr_scheduler=lr_scheduler)
+                      lr_scheduler=lr_scheduler,
+                      train_logger=train_logger)
     trainer.train()
-
-
-
-
 
 
 
@@ -75,7 +84,7 @@ if __name__ == "__main__":
 
     # Argument parsing
     parser = argparse.ArgumentParser(description="Magic sky train model")
-    parser.add_argument('-c', '--config', default=None, type=str, help='config file path (default:None)')
+    parser.add_argument('-c', '--config', default="./config/train_configs/config_UNetPlus.json", type=str, help='config file path (default:None)')
     parser.add_argument('-r', '--resume', default=None, type=str, help='path to latest checkpoint (default:None)')
     parser.add_argument('-d', '--device', default=None, type=str, help='indices of gpus to enable (default: all)' )
     args = parser.parse_args()
@@ -91,12 +100,8 @@ if __name__ == "__main__":
         # Assert Error
         raise AssertionError("Configuration file need to be specific. Add -c config.json, for example.")
 
-    # set gpus
-    if args.device:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.devices
-
+    print("current gpu: ", torch.cuda.current_device())
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # run the main function
-    main(config, args.resume)
-
-
+    main(config, args.resume, device)
 

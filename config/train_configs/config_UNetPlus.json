@@ -1,13 +1,12 @@
 {
     "name": "MagicSky",
     "n_gpu": 1,
-
+    
     "arch": {
-        "type": "ResNetFPN",
+        "type": "UNetPlus",
         "args": {
-            "backbone": "resnet18",
-            "num_classes": 1,
-            "pretrained_backbone": null
+            "backbone": "resnet50",
+            "num_classes": 1
         }
     },
 
@@ -24,7 +23,7 @@
 			"random_saturation": true,
 			"is_train": true,
 			"shuffle": true,
-			"batch_size": 16,
+			"batch_size": 8,
 			"n_workers": 24,
 			"pin_memory": true
 		}
@@ -37,7 +36,7 @@
 			"img_resize": 384,
 			"is_train": false,
 			"shuffle": false,
-			"batch_size": 16,
+			"batch_size": 8,
 			"n_workers": 24,
 			"pin_memory": true
 		}

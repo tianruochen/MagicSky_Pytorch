@@ -5,4 +5,4 @@
 # @Author   :Chang Qing
  
 from .magicsky import MagicSky
-
+from .skymagic_calibrator import Skymagic_Calibrator

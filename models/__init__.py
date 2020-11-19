@@ -6,3 +6,5 @@
  
 from models.ResNetFPN import ResNetFPN
 from models.UNet import UNet
+from models.ResNet50FCN import ResNet50FCN
+from models.UNetPlus import UNetPlus

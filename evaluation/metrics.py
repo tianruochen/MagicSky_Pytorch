@@ -8,26 +8,27 @@ from torch.nn import functional as F
 #------------------------------------------------------------------------------
 #   Fundamental metrics
 #------------------------------------------------------------------------------
-def miou(logits, targets, eps=1e-6):
+def miou(outputs, targets, eps=1e-6):
 	"""
-	logits: (torch.float32)  shape (N, 1, H, W)
-	targets: (torch.float32) shape (N, 3, H, W), value {0,1,...,C-1}
+	outputs: (torch.float32)  shape (N, 1, H, W)   after sigmoid
+	targets: (torch.float32) shape (N, H, W), value {0,1,...,C-1}
 	"""
-
-	outputs = torch.sigmoid(logits)
+	# outputs = torch.sigmoid(logits)
 	outputs[outputs > 0.5] = 1
 	outputs[outputs <= 0.5] = 0
 	# outputs = torch.argmax(logits, dim=1, keepdim=True).type(torch.int64)
-	outputs = outputs.expand_as(targets).type(torch.int64)
+	# outputs = outputs.expand_as(targets).type(torch.int64)
+	outputs = outputs.squeeze(1).type(torch.int64)
 	targets[targets > 0] = 1
 	targets = targets.type(torch.int64)
 	# targets = torch.unsqueeze(targets, dim=1).type(torch.int64)
-
+	# print(outputs.shape, outputs.dtype) torch.Size([16, 384, 384]) torch.int64
+	# print(targets.shape, targets.dtype) torch.Size([16, 384, 384]) torch.int64
 	# outputs = torch.zeros_like(logits).scatter_(dim=1, index=outputs, src=torch.tensor(1.0)).type(torch.int8)
 	# targets = torch.zeros_like(logits).scatter_(dim=1, index=targets, src=torch.tensor(1.0)).type(torch.int8)
 
-	inter = (outputs & targets).type(torch.float32).sum(dim=(2,3))
-	union = (outputs | targets).type(torch.float32).sum(dim=(2,3))
+	inter = (outputs & targets).type(torch.float32).sum(dim=(1, 2))
+	union = (outputs | targets).type(torch.float32).sum(dim=(1, 2))
 	iou = inter / (union + eps)
 	return iou.mean()
 

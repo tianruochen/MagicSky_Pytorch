@@ -74,10 +74,15 @@ class PairedDataAugmentation:
             img1 = TF.adjust_saturation(img1, saturation_factor=random.uniform(0.5, 1.5))
 
         # to tensor
+        # print(img1.size)  (384, 384)
+        # print(img2.size)
         img1 = TF.to_tensor(img1)
         img2 = TF.to_tensor(img2)
 
-        return img1, img2
+        # print(img1.shape) torch.Size([3, 384, 384])
+        # print(img2.shape)
+        # target 只取一个通道
+        return img1, img2[0]
 
 
 #------------------------------------------------------------------------------
@@ -95,7 +100,7 @@ class MagicSkyDataSet(Dataset):
         self.is_train = is_train
         if self.is_train:
             self.img_paths = glob.glob(os.path.join(os.path.abspath(self.root_dir), "images/train/", "*.jpg"))
-            print(len(self.img_paths))
+            # print(len(self.img_paths))
             self.augm = PairedDataAugmentation(
                 img_resize=self.img_resize,
                 with_random_flip=random_flip,
@@ -126,9 +131,10 @@ class MagicSkyDataSet(Dataset):
         img_B_path = self.img_paths[idx].replace('images', 'density_estimation+guided_filter').replace('.jpg', '.png')
         img_B = cv2.imread(img_B_path, cv2.IMREAD_COLOR)
         img_B = cv2.cvtColor(img_B, cv2.COLOR_BGR2RGB)
+        # 如果直接读入灰度图 在transform中 rotate 那一步会报错
+        # img_B = cv2.imread(img_B_path, cv2.IMREAD_GRAYSCALE)
 
         img_A, img_B = self.augm.transform(img_A, img_B)
-
         return img_A, img_B
 #------------------------------------------------------------------------------
 #	DataLoader for Sky Segmentation
@@ -181,4 +187,9 @@ class MagicSkyDataLoader(object):
             num_workers=self.n_workers,
             pin_memory=self.pin_memory,
         )
+
+
+
+if __name__ == "__main__":
+    pass
 
