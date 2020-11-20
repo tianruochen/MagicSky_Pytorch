@@ -8,10 +8,7 @@ import os
 import time
 import cv2
 import numpy as np
-# ------------------------------------------------------------------------------
-#   Get instance
-# ------------------------------------------------------------------------------
-# 从module指定的py文件中 根据用途name获取对应的tpye类，并根据参数 *args 和config['args']创建对象
+
 
 def get_instance(module, name, config, *args):
     # module_class = getattr(module, config[name]['type'])
@@ -21,7 +18,6 @@ def get_instance(module, name, config, *args):
 
 
 def cvtcolor_and_resize(img_HD, out_size_w, out_size_h):
-
     img_HD = cv2.cvtColor(img_HD, cv2.COLOR_BGR2RGB)
     img_HD = np.array(img_HD / 255., dtype=np.float32)
     # cv2.resize 参数 (W,H)
@@ -32,8 +28,9 @@ def cvtcolor_and_resize(img_HD, out_size_w, out_size_h):
 
 def get_time_str():
     timestamp = time.time()
-    time_str = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(timestamp))
+    time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
     return time_str
+
 
 def is_image(data_path):
     data_suffix = os.path.splitext(data_path)

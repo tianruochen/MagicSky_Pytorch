@@ -84,8 +84,8 @@ if __name__ == "__main__":
 
     # Argument parsing
     parser = argparse.ArgumentParser(description="Magic sky train model")
-    parser.add_argument('-c', '--config', default="./config/train_configs/config_UNetPlus.json", type=str, help='config file path (default:None)')
-    parser.add_argument('-r', '--resume', default=None, type=str, help='path to latest checkpoint (default:None)')
+    parser.add_argument('-c', '--config', default="./config/train_configs/config_ResNetFPN.json", type=str, help='config file path (default:None)')
+    parser.add_argument('-r', '--resume', default="/home/changqing/workspaces/MagicSky_Pytorch/checkpoints/UNetPlus/1119_173907/model_best.pth", type=str, help='path to latest checkpoint (default:None)')
     parser.add_argument('-d', '--device', default=None, type=str, help='indices of gpus to enable (default: all)' )
     args = parser.parse_args()
 
@@ -104,4 +104,5 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # run the main function
     main(config, args.resume, device)
+
 

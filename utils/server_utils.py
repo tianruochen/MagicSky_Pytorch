@@ -73,7 +73,34 @@ def parse_and_save_data(data, temp_dir):
         data_path, data_type = npstr2nparr(data.get('numpy'), temp_dir, data_basename)
     else:
         return None, -1
-
-    # 1:image  2:video
+    # bgsky_type: 0-image  1:video
     return data_path, data_type
 
+
+def parse_and_save_bgsky(data, temp_dir):
+    """
+        parse_and_save_data
+        :param data: post data (json)
+        :param temp_dir: (./eval_ouput)
+        :return: data_path and data_type(image:0, video:1)
+        """
+    if "bgsky_name" in data:
+        data_basename = data.get("bgsky_name")
+    else:
+        data_basename = "bgsky_test"
+
+    if 'bgsky_url' in data:
+        url = data.get('bgsky_url')
+        bgsky_path, bgsky_type = url2nparr(data.get('bgsky_url'), temp_dir, data_basename)
+        print(bgsky_path, bgsky_type)
+        log_info('Get %s sky background image' % url)
+    elif 'bgsky_image' in data:
+        # log_info('Got image buffer')
+        bgsky_path, bgsky_type = str2nparr(data.get('image'), temp_dir, data_basename)
+    elif 'bgsky_numpy' in data:
+        # log_info('Got numpy string')
+        bgsky_path, bgsky_type = npstr2nparr(data.get('numpy'), temp_dir, data_basename)
+    else:
+        return None, -1
+    # bgsky_type: 0-image  1:video
+    return bgsky_path, bgsky_type

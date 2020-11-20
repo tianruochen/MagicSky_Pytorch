@@ -5,8 +5,6 @@
 # @Author   :Chang Qing
  
 import json
-import logging
-
 
 class Logger:
 

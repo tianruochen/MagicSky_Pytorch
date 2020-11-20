@@ -3,6 +3,7 @@
 # @FileName :data_trans.py
 # @Time     :2020/11/6 下午2:39
 # @Author   :Chang Qing
+
 import os
 import json
 
@@ -16,8 +17,8 @@ import requests
 
 
 def download_data_from_url(url, temp_dir, data_basename):
-    data_type = -1
     try:
+        data_type = -1
         resp = requests.head(url)
         print(resp)
         if resp.headers.get('content-type').startswith('video'):
@@ -66,6 +67,7 @@ def url2nparr(data_url, temp_dir, data_basename):
         # return image
     except:
         return None, -1
+
 
 # only image
 def str2nparr(image_str, temp_dir, image_basename):

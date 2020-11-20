@@ -18,6 +18,7 @@ from infer_engine import MagicSky
 from utils.security import check_security
 from utils import get_time_str
 from utils.server_utils import parse_and_save_data, log_info
+from utils.server_utils import parse_and_save_bgsky
 from utils.server_utils import error_resp
 
 
@@ -54,14 +55,21 @@ def sky_edit():
         data_path, data_type = parse_and_save_data(data, temp_dir)
         print("data_path:", data_path)
         print("data_type:", data_type)
+        bgsky_path, bgsky_type = parse_and_save_bgsky(data, temp_dir)
+
         if data_type == 0:
             # processing image: modify sky config file
             sky_config["input_mode"] = "image"
-
         else:
             # processing video: modify sky config file
             sky_config["input_mode"] = "video"
         sky_config["datadir"] = data_path
+
+        if bgsky_type != 0:
+            print("Only pictures are supported for the moment")
+        else:
+            if bgsky_path is not None:
+                sky_config["sky_box"] = bgsky_path
 
         # sky editing...
         log_info("%s : begin..." % get_time_str())
