@@ -80,8 +80,8 @@ python train.py --config ./config/train_configs/config_UNetPlus.json \
 | -------------- | ----------:   | --------: | --------: 
 | UNet           |  mobilenet v2 |   17MB    |   0.639 |     
 | ResNetFPN      |  resnet18     |  63.37MB  |   0.671 | 
-| ResNetFPN      |  resnet50     |  276.1MB  |         |           
-| UNetPlus       |  resnet50     |  117.8MB  |         |     
+| ResNetFPN      |  resnet50     |  276.1MB  |   0.672 |           
+| UNetPlus       |  resnet50     |  117.8MB  |   0.672 |     
 | ResNet50FCN    |  resnet50     |  184.9MB  |   0.693 |     
 
 #### trained model path  (10.10.101.15)
@@ -89,8 +89,8 @@ python train.py --config ./config/train_configs/config_UNetPlus.json \
 | -------------- | ----------  | 
 |UNet-mobilenetv2   |  /home/changqing/workspaces/MagicSky_Pytorch/checkpoints/UNet/1116_201425/model_best.pth |
 |ResNetFPN_resnet18 |  /home/changqing/workspaces/MagicSky_Pytorch/checkpoints/ResNetFPN/1117_095050/model_best.pth |
-|ResNetFPN_resnet50 | -- |
-|UNetPlus_resnet50  | -- |
+|ResNetFPN_resnet50 | /home/changqing/workspaces/MagicSky_Pytorch/checkpoints/ResNetFPN/1119_185638/model_best.pth |
+|UNetPlus_resnet50  | /home/changqing/workspaces/MagicSky_Pytorch/checkpoints/UNetPlus/1120_100135/model_best.pth |
 |ResNet50FCN_resnet50| /home/changqing/workspaces/MagicSky_Pytorch/checkpoints/ResNet50FCN/1116_201917/model_best.pth|
 
 ## inference
