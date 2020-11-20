@@ -115,7 +115,7 @@ python skymagic.py --input the_path_of_input_file --bgsky the_path_of_bgsky
 python skymagic_server.py     # start flask service
 python server_test.py         # test  
 
-'''
+
  payload = {
         "url": "http://tbvideo.ixiaochuan.cn/zyvdorigine/b4/15/f057-f5f9-4acc-9b9b-26b77abf1532",
         #"url": "https://ns-strategy.cdn.bcebos.com/ns-strategy/upload/fc_big_pic/part-00147-2263.jpg",
@@ -125,7 +125,7 @@ python server_test.py         # test
         "timestamp": t,
         "sign": s
     }
-'''
+
 for image suport b64_image_str, ndarray_str and url
 for video, only support url
 ```
