@@ -224,10 +224,13 @@ class MagicSky(object):
 
                 # core process
                 self.synthesize_engine.load_bgsky(self.out_size_w, self.out_size_h)
-
+                syne_tik = cv2.getTickCount()
                 syneth, G_pred, skymask = self.synthesize_engine.synthesize(self.model,
                                                                             img_HD, img_HD_pre, self.in_size_w,
                                                                             self.in_size_h, device)
+                syne_tok = cv2.getTickCount()
+                syne_cost = (syne_tok - syne_tik) / cv2.getTickFrequency()
+                print("syne cost: ", syne_cost)
 
                 if self.save_jpgs:
 
@@ -236,7 +239,12 @@ class MagicSky(object):
                     plt.imsave(fpath[:-4] + '_syneth.jpg', syneth.clip(min=0, max=1))
 
                 print(img_HD.shape, syneth.shape, skymask.shape)
+
+                save_tik = cv2.getTickCount()
                 self.write_video(img_HD, syneth, skymask)
+                save_tok = cv2.getTickCount()
+                save_cost = (save_tok - save_tik) / cv2.getTickFrequency()
+                print("save cost: ", save_cost)
                 print('processing: %d / %d ...' % (idx, num_frame))
 
                 img_HD_pre = img_HD

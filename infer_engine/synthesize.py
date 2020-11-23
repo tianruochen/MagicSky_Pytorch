@@ -142,9 +142,9 @@ class SynthesizeEngine():
             return np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32)
 
         # (105,1,2)  (105,1,2)
-        print(curr_pts.shape[0])
+        #print(curr_pts.shape[0])
         prev_pts, curr_pts = removeOutliers(prev_pts, curr_pts)
-        print(curr_pts.shape[0])
+        #print(curr_pts.shape[0])
         if curr_pts.shape[0] < 7:   #10
             print('no good point matched...')
             return np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32)
@@ -204,10 +204,10 @@ class SynthesizeEngine():
 
 
     def skyblend(self, img, img_prev, skymask):
-        print(img.shape)
-        print(skymask.shape)
-        if img_prev is not None:
-            print(img_prev.shape)
+        #print(img.shape)
+        #print(skymask.shape)
+        # if img_prev is not None:
+        #     print(img_prev.shape)
 
         # 如果是处理单张图像的话 img_prev == None
         if img_prev is None:
@@ -260,20 +260,28 @@ class SynthesizeEngine():
 
         with torch.no_grad():
             print(img.shape)
+            mode_tik = cv2.getTickCount()
             G_pred = mode(img.to(device))  # bs,1,384,384  (0-1之间)
+            mode_tok = cv2.getTickCount()
+            mode_cost = (mode_tok - mode_tik) / cv2.getTickFrequency()
+            print("model_cost: ", mode_cost)
             # bs,1,384,384 -- bs 1 480,845
-            print(h,w)
+            # print(h,w)
             G_pred = torch.nn.functional.interpolate(G_pred, (h, w), mode='bicubic', align_corners=False)
             G_pred = G_pred[0, :].permute([1, 2, 0])  # 480,845,1
             G_pred = torch.cat([G_pred, G_pred, G_pred], dim=-1)  # 480,845，3
             G_pred = np.array(G_pred.detach().cpu())
             G_pred = np.clip(G_pred, a_max=1.0, a_min=0.0)  # 480,845,3
 
+        refine_tik = cv2.getTickCount()
         # G_pred 480，845 3   img_HD 480，845，3   采用导向滤波，平滑图像并保持边缘
         skymask = self.skymask_refinement(G_pred, img_HD)
 
         syneth = self.skyblend(img_HD, img_HD_prev, skymask)
 
+        refine_tok = cv2.getTickCount()
+        refine_cost = (refine_tok - refine_tik) / cv2.getTickFrequency()
+        print("refine cost:", refine_cost)
         # 返回合成的新图，模型的输出，天空的掩膜（不是二值图像，而是模型输出经过导向滤波后的输出）
         # shape均为：(480，845 3)
         return syneth, G_pred, skymask

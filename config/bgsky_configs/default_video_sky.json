@@ -7,7 +7,7 @@
             "pretrained_backbone": null
         }
   },
-  "ckptdir": "/home/changqing/workspaces/MagicSky_Pytorch/checkpoints/ResNet50FCN/best_ckpt.pt",
+  "ckptdir": "/home/changqing/workspaces/MagicSky_Pytorch/checkpoints/ResNet50FCN/1116_201917/model_best.pth",
   "input_mode": "video",
   "datadir": "./test_videos/canyon.mp4",
   "sky_box": "jupiter.jpg",

@@ -76,13 +76,13 @@ python train.py --config ./config/train_configs/config_UNetPlus.json \
 ## inference
 #### comparsion on cvprw2020_sky_seg dataset
 
-| Model type     |  backbone     | params    |  miou         
-| -------------- | ----------:   | --------: | --------: 
-| UNet           |  mobilenet v2 |   17MB    |   0.639 |     
-| ResNetFPN      |  resnet18     |  63.37MB  |   0.671 | 
-| ResNetFPN      |  resnet50     |  276.1MB  |   0.672 |           
-| UNetPlus       |  resnet50     |  117.8MB  |   0.672 |     
-| ResNet50FCN    |  resnet50     |  184.9MB  |   0.693 |     
+| Model type     |  backbone     | params    |  miou   |   inference(ms) |  refine(ms) |  total(s) |       
+| -------------- | ----------:   | --------: | -------:|   :----------:   | :--------:   | :--------: | 
+| UNet           |  mobilenet v2 |   17MB    |   0.639 |    17 [1f]          |   145 [1f]      |   77.8 [172f]   | 
+| ResNetFPN      |  resnet18     |  63.37MB  |   0.671 |    --            |     --        |    --       | 
+| ResNetFPN      |  resnet50     |  276.1MB  |   0.672 |    --             |    --         |   --        | 
+| UNetPlus       |  resnet50     |  117.8MB  |   0.672 |    --             |    --         |    --       | 
+| ResNet50FCN    |  resnet50     |  184.9MB  |   0.693 |    22 [1f]          |  145 [1f]       |   79.5 [172f]   | 
 
 #### trained model path  (10.10.101.15)
 | Model type     |  Model path     

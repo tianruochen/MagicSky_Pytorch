@@ -26,5 +26,5 @@
   "halo_effect": true,
 
   "output_dir": "./eval_output",
-  "save_jpgs": true
+  "save_jpgs": false
 }
